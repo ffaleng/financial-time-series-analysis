@@ -1,16 +1,35 @@
-# 这是一个示例 Python 脚本。
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 
-# 按 Shift+F10 执行或将其替换为您的代码。
-# 按 双击 Shift 在所有地方搜索类、文件、工具窗口、操作和设置。
+df = pd.read_csv("data/prices.csv")
+print(df)
+print(df.dtypes)
 
+df["Date"] = pd.to_datetime(df["Date"])
+print(df.dtypes)
+df = df.sort_values("Date")
+df = df.set_index("Date")
+print(df)
+df["Daily_Return"] = df["Close"].pct_change()
+print(df[["Close", "Daily_Return"]])
+df = df.dropna(subset=["Daily_Return"])
+print(df[["Close", "Daily_Return"]])
+df["Cumulative_Return"] = (1 + df["Daily_Return"]).cumprod() - 1
+print(df[["Close", "Daily_Return", "Cumulative_Return"]])
+daily_volatility = df["Daily_Return"].std()
+print("Daily volatility:", daily_volatility)
+annualized_volatility = daily_volatility * np.sqrt(252)
+print("Annualized volatility:", annualized_volatility)
+df["Peak"] = df["Close"].cummax()
+print(df[["Close", "Peak"]])
+df["Drawdown"] = df["Close"] / df["Peak"] - 1
+print(df[["Close", "Peak", "Drawdown"]])
+max_drawdown = df["Drawdown"].min()
+print("Maximum drawdown:", max_drawdown)
 
-def print_hi(name):
-    # 在下面的代码行中使用断点来调试脚本。
-    print(f'Hi, {name}')  # 按 Ctrl+F8 切换断点。
-
-
-# 按装订区域中的绿色按钮以运行脚本。
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# 访问 https://www.jetbrains.com/help/pycharm/ 获取 PyCharm 帮助
+df["Close"].plot(title="Closing Price")
+plt.xlabel("Date")
+plt.ylabel("Price")
+plt.tight_layout()
+plt.show()
