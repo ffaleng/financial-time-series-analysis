@@ -29,9 +29,12 @@ max_drawdown = df["Drawdown"].min()
 print("Maximum drawdown:", max_drawdown)
 
 df["Close"].plot(title="Closing Price")
+
 plt.xlabel("Date")
 plt.ylabel("Price")
 plt.tight_layout()
+
+plt.savefig("figures/closing price.png")
 plt.show()
 
 df["Rolling_Mean_3"] = df["Close"].rolling(window=3).mean()
@@ -41,9 +44,28 @@ print(df[["Daily_Return", "Rolling_Vol_3"]])
 
 df["Close"].plot(label="Close")
 df["Rolling_Mean_3"].plot(label="3-Day Rolling Mean")
+
 plt.title("Closing Price and 3-Day Rolling Mean")
 plt.xlabel("Date")
 plt.ylabel("Price")
 plt.legend()
 plt.tight_layout()
+
+plt.savefig("figures/close_and_rolling_mean.png")
 plt.show()
+
+total_return = df["Cumulative_Return"].iloc[-1]
+print("Total Return:", total_return)
+
+summary = {
+    "Total Return": total_return,
+    "Annualized Volatility": annualized_volatility,
+    "Max Drawdown": max_drawdown,
+}
+print(summary)
+
+summary_df = pd.DataFrame([summary])
+print(summary_df)
+
+summary_df.to_csv("outputs/summary.csv", index=False)
+df.to_csv("outputs/processed_prices.csv")
