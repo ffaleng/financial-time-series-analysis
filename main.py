@@ -34,8 +34,33 @@ df["Rolling_Mean_3"] = df["Close"].rolling(window=3).mean()
 
 df["Rolling_Vol_3"] = df["Daily_Return"].rolling(window=3).std()
 
-# 5. Create visualizations
+# 5. Create trading signal
 
+df["Signal"] = (df["Close"] > df["Rolling_Mean_3"]).astype(int)
+print(df[["Close", "Rolling_Mean_3", "Signal"]])
+
+df["Position"] = df["Signal"].shift(1)
+print(df[["Signal", "Position"]])
+
+df["Position"] = df["Position"].fillna(0)
+df["Strategy_Return"] = df["Position"] * df["Daily_Return"]
+
+print(df[["Daily_Return", "Signal", "Position", "Strategy_Return"]])
+
+df["Strategy_Cumulative_Return"] = (
+    1 + df["Strategy_Return"]
+).cumprod() - 1
+print(df[[
+    "Cumulative_Return",
+    "Strategy_Cumulative_Return"
+]])
+
+strategy_total_return = df["Strategy_Cumulative_Return"].iloc[-1]
+total_return = df["Cumulative_Return"].iloc[-1]
+print("Buy & Hold Return:", total_return)
+print("Strategy Return:", strategy_total_return)
+
+# 6. Create visualizations
 df["Close"].plot(title="Closing Price")
 
 plt.xlabel("Date")
@@ -61,7 +86,8 @@ total_return = df["Cumulative_Return"].iloc[-1]
 
 
 summary = {
-    "Total Return": total_return,
+    "Buy & Hold Return": total_return,
+    "Strategy Return": strategy_total_return,
     "Annualized Volatility": annualized_volatility,
     "Max Drawdown": max_drawdown,
 }
